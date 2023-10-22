@@ -1,0 +1,8 @@
+22.10.2023 21:55:22 Created: D:\Temp\Новая папка
+22.10.2023 21:55:31 Renamed: D:\Temp\Новая папка to D:\Temp\hello world
+22.10.2023 21:55:35 Created: D:\Temp\Новый текстовый документ.txt
+22.10.2023 21:55:44 Renamed: D:\Temp\Новый текстовый документ.txt to D:\Temp\hello c#.txt
+22.10.2023 21:55:48 Changed: D:\Temp\hello c#.txt
+22.10.2023 21:57:30 Changed: D:\Temp\hello c#.txt
+22.10.2023 22:02:43 Created: D:\Temp\Новая папка
+22.10.2023 22:02:44 Renamed: D:\Temp\Новая папка to D:\Temp\zxczxc
