@@ -2,12 +2,22 @@
 
 public class FileWatcherService : BackgroundService
 {
+    
+    private readonly IConfiguration Configuration;
+    
+    public FileWatcherService(IConfiguration configuration)
+    {
+        Configuration = configuration;
+    }
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         var filePath = "folderEvents.txt";
+        
+        var path = Configuration["FileWatcher:Path"];
+        
         try
         {
-            using var watcher = new FileSystemWatcher("D:\\Temp");
+            using var watcher = new FileSystemWatcher(path);
             // записываем изменения
             watcher.Changed += async (o, e) =>
                 await File.AppendAllTextAsync(filePath, $"{DateTime.Now} Changed: {e.FullPath}\n");
@@ -29,9 +39,9 @@ public class FileWatcherService : BackgroundService
         }
         catch (DirectoryNotFoundException e)
         {
-            string errorMessage = "The directory D:\\Temp cannot be found.";
+            var errorMessage = "The directory D:\\Temp cannot be found.";
             Console.WriteLine(errorMessage);
-            await File.AppendAllTextAsync(filePath, $"{DateTime.Now} Error: {e} " + errorMessage + "\n");
+            await File.AppendAllTextAsync(filePath, $"{DateTime.Now} Error: {e} {errorMessage}\n");
         }
 
         // если операция не отменена, то выполняем задержку в 200 миллисекунд
