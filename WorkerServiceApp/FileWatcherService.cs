@@ -5,21 +5,20 @@ namespace WorkerServiceApp;
 public class FileWatcherService : BackgroundService
 {
     
-    private readonly IConfiguration _configuration;
+    //private readonly IConfiguration _configuration;
     private readonly FileWatcherConfig _options;
 
-    public FileWatcherService(IConfiguration configuration, IOptions<FileWatcherConfig> options)
-    {
-        _configuration = configuration;
+    public FileWatcherService() { }
+    public FileWatcherService(/*IConfiguration configuration, */IOptions<FileWatcherConfig> options) =>
+        //_configuration = configuration;
         _options = options.Value;
-    }
     
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         
         //////////////////////////////////////////////////////////////
         var filePath = "folderEventsNew.txt";
-        var path = _configuration["FileWatcher:Path"];
+        //var path = _configuration["FileWatcher:Path"];
 
         //FileWatcherConfig fileWatcherConfig = new FileWatcherConfig();
         Console.WriteLine("_options.DirectoryLocation = " + _options.DirectoryLocation);
