@@ -1,55 +1,71 @@
-﻿namespace WorkerServiceApp;
+﻿using Microsoft.Extensions.Options;
+
+namespace WorkerServiceApp;
 
 public class FileWatcherService : BackgroundService
 {
     
-    private readonly IConfiguration Configuration;
-    
-    public FileWatcherService(IConfiguration configuration)
+    private readonly IConfiguration _configuration;
+    private readonly FileWatcherConfig _options;
+
+    public FileWatcherService(IConfiguration configuration, IOptions<FileWatcherConfig> options)
     {
-        Configuration = configuration;
+        _configuration = configuration;
+        _options = options.Value;
     }
+    
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var filePath = "folderEvents.txt";
         
-        var path = Configuration["FileWatcher:Path"];
+        //////////////////////////////////////////////////////////////
+        var filePath = "folderEventsNew.txt";
+        var path = _configuration["FileWatcher:Path"];
+
+        //FileWatcherConfig fileWatcherConfig = new FileWatcherConfig();
+        Console.WriteLine("_options.DirectoryLocation = " + _options.DirectoryLocation);
+        Console.WriteLine("_options.FilePath = " + _options.FilePath);
         
         try
         {
-            using var watcher = new FileSystemWatcher(path);
-            // записываем изменения
-            watcher.Changed += async (o, e) =>
-                await File.AppendAllTextAsync(filePath, $"{DateTime.Now} Changed: {e.FullPath}\n");
+            var watcher = new FileSystemWatcher(_options.DirectoryLocation);
             // записываем данные о создании файлов и папок
-            watcher.Created += async (o, e) =>
-                await File.AppendAllTextAsync(filePath, $"{DateTime.Now} Created: {e.FullPath}\n");
+            watcher.Created += OnCreated;
             // записываем данные об удалении файлов и папок
             watcher.Deleted += async (o, e) =>
-                await File.AppendAllTextAsync(filePath, $"{DateTime.Now} Deleted: {e.FullPath}\n");
+                await File.AppendAllTextAsync(_options.FilePath, $"{DateTime.Now} Deleted: {e.FullPath}\n");
             // записываем данные о переименовании
             watcher.Renamed += async (o, e) =>
-                await File.AppendAllTextAsync(filePath, $"{DateTime.Now} Renamed: {e.OldFullPath} to {e.FullPath}\n");
+                await File.AppendAllTextAsync(_options.FilePath, $"{DateTime.Now} Renamed: {e.OldFullPath} to {e.FullPath}\n");
             // записываем данные об ошибках
             watcher.Error += async (o, e) =>
-                await File.AppendAllTextAsync(filePath, $"{DateTime.Now} Error: {e.GetException().Message}\n");
+                await File.AppendAllTextAsync(_options.FilePath, $"{DateTime.Now} Error: {e.GetException().Message}\n");
 
             watcher.IncludeSubdirectories = true; // отслеживаем изменения в подкаталогах
             watcher.EnableRaisingEvents = true; // включаем события
-        }
-        catch (DirectoryNotFoundException e)
+           
+            
+            // если операция не отменена, то выполняем задержку в 200 миллисекунд
+            while (!stoppingToken.IsCancellationRequested)
+            {
+                await Task.Delay(200, stoppingToken);
+            }
+            //watcher.Dispose();
+            await Task.CompletedTask;
+            watcher.Dispose();
+        } 
+        catch (DirectoryNotFoundException)
         {
             var errorMessage = "The directory D:\\Temp cannot be found.";
             Console.WriteLine(errorMessage);
-            await File.AppendAllTextAsync(filePath, $"{DateTime.Now} Error: {e} {errorMessage}\n");
         }
-
-        // если операция не отменена, то выполняем задержку в 200 миллисекунд
-        while (!stoppingToken.IsCancellationRequested)
-        {
-            await Task.Delay(200, stoppingToken);
-        }
-
-        await Task.CompletedTask;
+        
+        
+    }
+    
+    private static void OnCreated(object sender, FileSystemEventArgs e)
+    {
+        var filePath = "folderEventsNew.txt";
+        Console.WriteLine($"{DateTime.Now} Created: {e.FullPath}\n");
+        File.AppendAllTextAsync(filePath, $"{DateTime.Now} Created: {e.FullPath}\n");
     }
 }
